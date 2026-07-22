@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* ===== Accounts Store Egypt — ثيم سينمائي نيون غامق سلس ===== */
+@theme {
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #e50914; /* Netflix Red */
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+
+  /* ألوان دلالية للثيم الداكن الأنيق */
+  --color-bg: #09090b;
+  --color-surface: #121217;
+  --color-surface-2: #181822;
+  --color-line: #272738;
+  --color-fg: #f4f4f6;
+  --color-muted: #a1a1aa;
+
+  --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-fg);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-bg);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* أرقام متساوية العرض للأسعار */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* نص بتدرّج سينمائي أحمر/بنفسجي نيون */
+.text-gradient {
+  background: linear-gradient(135deg, #f87171 0%, #e50914 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* خلفية زر بتدرج سينمائي ورسومي */
+.bg-brand-gradient {
+  background: linear-gradient(135deg, #e50914 0%, #9333ea 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-brand-gradient:hover {
+  background: linear-gradient(135deg, #ff1e27 0%, #a855f7 100%);
+  box-shadow: 0 8px 25px -5px rgba(229, 9, 20, 0.5);
+  transform: translateY(-1px);
+}
+
+/* توهج نيون سلس كروت وبانرات */
+.glow-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glow-card:hover {
+  border-color: rgba(229, 9, 20, 0.5);
+  box-shadow: 0 10px 30px -10px rgba(229, 9, 20, 0.3);
+  transform: translateY(-4px);
+}
+
+/* تأثير التهدئة والانسيابية Glassmorphism */
+.glass-panel {
+  background: rgba(18, 18, 23, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #272738;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
+}
