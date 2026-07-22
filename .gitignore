@@ -14,9 +14,6 @@ npm.tgz
 
 # production
 /build
-dev.db
-dev.db-journal
-dev.db-wal
 
 # misc
 .DS_Store
