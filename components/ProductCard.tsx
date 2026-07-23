@@ -9,21 +9,27 @@ export default function ProductCard({ product }: { product: ProductView }) {
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-surface/90 backdrop-blur-md transition-all duration-300 hover:border-red-500/50 hover:shadow-[0_12px_35px_-10px_rgba(229,9,20,0.35)] hover:-translate-y-1.5">
-      {/* الصورة ذات التكبير الناعم */}
+      {/* الصورة ذات التكبير الناعم والإصلاح الذكي للأخطاء */}
       <Link
         href={`/products/${product.slug}`}
-        className="relative block aspect-[4/3] overflow-hidden bg-surface-2"
+        className="relative block aspect-[16/10] overflow-hidden bg-surface-2"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={img}
           alt={product.name}
           loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (!target.src.includes("placeholder")) {
+              target.src = "/products/placeholder.svg";
+            }
+          }}
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
 
-        {/* تدرّج تظليل على الصورة لتوضيح النواحي */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-black/30 opacity-60" />
+        {/* تدرّج تظليل على الصورة لتوضيح العنوان */}
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-black/40 opacity-60" />
 
         {/* الشارات المضيئة بالمنتج */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
