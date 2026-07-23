@@ -251,8 +251,17 @@ export default function SocialCards({ cards }: SocialCardsProps) {
                 </div>
               </div>
             ) : (
-              <div className="relative w-full h-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
-                <img src={card.imgUrl} loading="lazy" alt={card.alt || `Card ${index}`} className="absolute inset-0 w-full h-full object-cover z-10" />
+              <div className="relative w-full h-full overflow-hidden rounded-3xl border border-white/20 bg-surface/90 shadow-2xl group flex items-center justify-center p-1">
+                <img
+                  src={card.imgUrl}
+                  loading="lazy"
+                  alt={card.alt || `صورة رأي عميل ${index + 1}`}
+                  className="w-full h-full object-cover object-top rounded-2xl transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/10" />
+                <span className="absolute bottom-3 right-3 rounded-full border border-emerald-500/40 bg-emerald-950/80 px-2.5 py-1 text-[10px] font-black text-emerald-300 backdrop-blur-md z-20">
+                  🟢 تحويل حقيقي مؤكد
+                </span>
               </div>
             );
 
