@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ProductView } from "@/lib/products";
 import { formatPrice, discountLabel } from "@/lib/format";
