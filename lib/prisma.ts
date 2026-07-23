@@ -4,12 +4,17 @@ import fs from "fs";
 import path from "path";
 
 function getDatabaseUrl(): string {
-  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+  // ينسخ لـ /tmp فقط على بيئة Vercel (Linux Serverless)
+  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.platform !== "win32")) {
     try {
-      const tmpDbPath = path.join("/tmp", "dev.db");
+      const tmpDir = "/tmp";
+      const tmpDbPath = path.join(tmpDir, "dev.db");
       const rootDbPath = path.join(process.cwd(), "dev.db");
 
       if (fs.existsSync(rootDbPath)) {
+        if (!fs.existsSync(tmpDir)) {
+          fs.mkdirSync(tmpDir, { recursive: true });
+        }
         let shouldCopy = !fs.existsSync(tmpDbPath);
 
         if (!shouldCopy) {
