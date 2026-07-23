@@ -11,6 +11,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteAllProducts,
   isSlugTaken,
   type ProductInput,
 } from "@/lib/products";
@@ -195,6 +196,19 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
     } catch (e) {
       console.error("فشل حذف المنتج:", e);
     }
+  }
+  redirect("/admin/products");
+}
+
+export async function deleteAllProductsAction(): Promise<void> {
+  await requireAdmin();
+  try {
+    await deleteAllProducts();
+    revalidatePath("/admin/products");
+    revalidatePath("/admin");
+    revalidatePath("/");
+  } catch (e) {
+    console.error("فشل حذف كل المنتجات:", e);
   }
   redirect("/admin/products");
 }

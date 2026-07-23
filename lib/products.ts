@@ -95,9 +95,16 @@ const DEFAULT_PRODUCTS = [
 async function ensureSeedProducts() {
   try {
     const seededMarker = await prisma.setting.findUnique({ where: { key: "db_seeded_v1" } });
-    if (seededMarker && seededMarker.value === "1") {
-      return;
+    if (seededMarker) {
+      return; // تم التثبيت مسبقاً، لن يتم التكرار أبداً حتى عند حذف المنتجات بالكامل
     }
+
+    // حفظ علامة التثبيت أولاً لمنع أي تكرار مستقبلي
+    await prisma.setting.upsert({
+      where: { key: "db_seeded_v1" },
+      update: { value: "1" },
+      create: { key: "db_seeded_v1", value: "1" },
+    });
 
     const count = await prisma.product.count();
     if (count === 0) {
@@ -109,12 +116,6 @@ async function ensureSeedProducts() {
         });
       }
     }
-
-    await prisma.setting.upsert({
-      where: { key: "db_seeded_v1" },
-      update: { value: "1" },
-      create: { key: "db_seeded_v1", value: "1" },
-    });
   } catch (e) {
     console.error("فشل التغذية التلقائية للمنتجات:", e);
   }
@@ -191,6 +192,7 @@ export async function getProductBySlug(
 
 // ===== أدمن =====
 export async function getAllProductsAdmin(): Promise<ProductView[]> {
+  await ensureSeedProducts();
   const rows = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -240,6 +242,13 @@ export async function deleteProduct(id: string) {
     console.error("فشل فك ارتباط الطلبات:", e);
   }
   return prisma.product.delete({ where: { id } });
+}
+
+export async function deleteAllProducts() {
+  const products = await prisma.product.findMany({ select: { id: true } });
+  for (const p of products) {
+    await deleteProduct(p.id);
+  }
 }
 
 export async function isSlugTaken(
