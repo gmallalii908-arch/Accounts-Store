@@ -170,4 +170,5 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
       console.error("فشل حذف المنتج:", e);
     }
   }
+  redirect("/admin/products");
 }

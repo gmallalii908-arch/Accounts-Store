@@ -94,12 +94,27 @@ const DEFAULT_PRODUCTS = [
 
 async function ensureSeedProducts() {
   try {
+    const seededMarker = await prisma.setting.findUnique({ where: { key: "db_seeded_v1" } });
+    if (seededMarker && seededMarker.value === "1") {
+      return;
+    }
+
     const count = await prisma.product.count();
     if (count === 0) {
       for (const p of DEFAULT_PRODUCTS) {
-        await prisma.product.create({ data: p });
+        await prisma.product.upsert({
+          where: { slug: p.slug },
+          update: {},
+          create: p,
+        });
       }
     }
+
+    await prisma.setting.upsert({
+      where: { key: "db_seeded_v1" },
+      update: { value: "1" },
+      create: { key: "db_seeded_v1", value: "1" },
+    });
   } catch (e) {
     console.error("فشل التغذية التلقائية للمنتجات:", e);
   }
@@ -216,7 +231,6 @@ export async function updateProduct(id: string, input: ProductInput) {
 }
 
 export async function deleteProduct(id: string) {
-  // فك ارتباط عناصر الطلبات السابقة بالمنتج بدلاً من فشل الحذف
   try {
     await prisma.orderItem.updateMany({
       where: { productId: id },
