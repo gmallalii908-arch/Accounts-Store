@@ -9,6 +9,9 @@ const REAL_REVIEW_IMAGES: CardItem[] = [
   { imgUrl: "/reviews/review3.jpg", alt: "إثبات تحويل إنستاباي 400 جنيه وتأكيد التفعيل" },
   { imgUrl: "/reviews/review4.jpg", alt: "إثبات تحويل 55 جنيه وتأكيد اشتراك نتفليكس شهر" },
   { imgUrl: "/reviews/review5.jpg", alt: "إثبات تحويل 120 جنيه وتفعيل اشتراك نتفليكس 3 شهور" },
+  { imgUrl: "/reviews/review6.jpg", alt: "إثبات تحويل 120 جنيه وتجهيز حساب نتفليكس" },
+  { imgUrl: "/reviews/review7.jpg", alt: "إثبات تحويل 300 جنيه وتأكيد اشتراك نتفليكس 3 شهور" },
+  { imgUrl: "/reviews/review8.jpg", alt: "إثبات تحويل إنستاباي 300 جنيه وتأكيد تسليم شاهد VIP" },
 ];
 
 export default function ReviewsSection() {
@@ -40,7 +43,7 @@ export default function ReviewsSection() {
           <SocialCards cards={REAL_REVIEW_IMAGES} />
         </div>
 
-        {/* معرض مصغر إضافي لعرض صور الإثباتات بوضوح */}
+        {/* معرض مصغر إضافي لعرض كافة صور الإثباتات الـ 8 بوضوح */}
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           {REAL_REVIEW_IMAGES.map((img, idx) => (
             <button
