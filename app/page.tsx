@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import ReviewsSection from "@/components/ReviewsSection";
+import FaqSection from "@/components/FaqSection";
 import { getActiveProducts } from "@/lib/products";
 import { getActiveReviews } from "@/lib/reviews";
 
@@ -25,6 +26,9 @@ export default async function HomePage() {
 
       {/* قسم آراء وتقييمات المشتركين */}
       <ReviewsSection reviews={reviews} />
+
+      {/* قسم الأسئلة الشائعة FAQ */}
+      <FaqSection />
     </>
   );
 }

@@ -8,9 +8,9 @@ export const site = {
   // روابط تُستخدم في الهيدر والفوتر
   nav: [
     { label: "الاشتراكات والباقات", href: "/#products" },
+    { label: "الأسئلة الشائعة", href: "/#faq" },
     { label: "تتبّع طلبك", href: "/track" },
     { label: "الضمان والسياسة", href: "/policy" },
-    { label: "الدعم الفني", href: "/#contact" },
   ],
   whatsapp: "201508997357",
   // بيانات الدفع بالتحويل في مصر (فودافون كاش / إنستاباي Instapay)
