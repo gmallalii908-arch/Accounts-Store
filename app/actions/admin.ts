@@ -14,6 +14,7 @@ import {
   isSlugTaken,
   type ProductInput,
 } from "@/lib/products";
+import { toggleReviewApproved, deleteReview } from "@/lib/reviews";
 import { cleanStr, isNonEmpty } from "@/lib/validation";
 
 // ===== الطلبات =====
@@ -48,6 +49,31 @@ export async function deleteOrderAction(formData: FormData): Promise<void> {
     revalidatePath("/admin");
   }
   redirect("/admin/orders");
+}
+
+// ===== التقييمات =====
+export async function toggleReviewApprovedAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = cleanStr(formData.get("id"), 40);
+  if (id) {
+    await toggleReviewApproved(id);
+    revalidatePath("/admin/reviews");
+    revalidatePath("/admin");
+    revalidatePath("/");
+  }
+  redirect("/admin/reviews");
+}
+
+export async function deleteReviewAdminAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = cleanStr(formData.get("id"), 40);
+  if (id) {
+    await deleteReview(id);
+    revalidatePath("/admin/reviews");
+    revalidatePath("/admin");
+    revalidatePath("/");
+  }
+  redirect("/admin/reviews");
 }
 
 // ===== المنتجات =====

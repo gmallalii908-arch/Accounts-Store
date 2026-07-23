@@ -17,6 +17,7 @@ function getSecret(): Uint8Array {
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
 }
+
 export async function verifyPassword(
   password: string,
   hash: string
@@ -58,9 +59,32 @@ export type SessionUser = {
   role: string;
 };
 
+/** إنشاء/تأكيد وجود حساب الأدمن افتراضياً */
+export async function ensureAdminUser(): Promise<void> {
+  try {
+    const adminEmail = "admin@accountsstore.eg";
+    const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (!existing) {
+      const passwordHash = await hashPassword("Admin@2026#Store");
+      await prisma.user.create({
+        data: {
+          name: "إدارة متجر الحسابات",
+          email: adminEmail,
+          phone: "01508997357",
+          passwordHash,
+          role: "admin",
+        },
+      });
+    }
+  } catch (e) {
+    console.error("فشل تأكيد حساب الأدمن:", e);
+  }
+}
+
 /** المستخدم الحالي من الجلسة، أو null لو مش مسجّل دخول */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   try {
+    await ensureAdminUser();
     const store = await cookies();
     const token = store.get(COOKIE_NAME)?.value;
     if (!token) return null;
@@ -78,7 +102,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       role: user.role,
     };
   } catch {
-    return null; // توكن غير صالح/منتهي
+    return null;
   }
 }
 
