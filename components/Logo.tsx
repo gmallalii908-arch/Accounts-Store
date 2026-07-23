@@ -3,13 +3,13 @@ import { site } from "@/lib/site";
 
 export default function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link href="/" className={`flex items-center gap-3 ${className}`}>
-      <AccountsStoreIcon />
-      <div className="flex flex-col leading-tight">
-        <span className="text-base font-black tracking-tight text-fg sm:text-lg">
+    <Link href="/" className={`flex items-center gap-2.5 shrink-0 ${className}`}>
+      <AccountsStoreIcon size={36} />
+      <div className="flex flex-col leading-tight min-w-0">
+        <span className="text-sm font-black tracking-tight text-fg sm:text-lg whitespace-nowrap">
           {site.name}
         </span>
-        <span className="text-[11px] font-bold text-red-500">
+        <span className="hidden sm:block text-[10px] font-bold text-red-500 whitespace-nowrap">
           اشتراكات الترفيه في مصر 🇪🇬
         </span>
       </div>
