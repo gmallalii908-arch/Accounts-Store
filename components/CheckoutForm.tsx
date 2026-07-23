@@ -49,13 +49,13 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="items" value={itemsJson} />
 
-      {/* تنبيه التسليم الرقمي الفوري عبر الواتساب */}
+      {/* تنبيه التسليم الرقمي الفوري عبر الواتساب حصراً */}
       <div className="flex items-center gap-3 rounded-2xl border border-brand-500/40 bg-brand-500/10 p-4 text-brand-300">
         <span className="text-2xl shrink-0">⚡</span>
         <div className="text-sm">
           <p className="font-bold text-fg">تسليم وتفعيل فوري على الواتساب 🟢</p>
           <p className="text-xs text-muted mt-0.5">
-            سيصلك تفعيل الاشتراك خلال 10 دقائق فقط عبر الواتساب والإيميل فور تأكيد التحويل.
+            سيصلك تفعيل الاشتراك خلال 10 دقائق فقط عبر الواتساب فور تأكيد التحويل.
           </p>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
             inputMode="tel"
           />
           <Field
-            label="البريد الإلكتروني (لاستلام الحساب)"
+            label="البريد الإلكتروني (لتوثيق الحساب)"
             name="customerEmail"
             defaultValue={user?.email ?? ""}
             type="email"
@@ -103,7 +103,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
           id="note"
           name="note"
           rows={2}
-          placeholder="مثال: يرجى تفعيل الاشتراك على إيميلي الخاص أو أي ملاحظة أخرى"
+          placeholder="مثال: يرجى إرسال التفعيل على رقم الواتساب الآخر 01xxxxxxxxx أو أي ملاحظة أخرى"
           className="mt-1 w-full rounded-xl border border-line bg-bg px-3 py-2 text-fg outline-none focus:border-brand-500"
         />
 
@@ -146,7 +146,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
             value="transfer_wallet"
             current={method}
             onSelect={setMethod}
-            title="فودافون كاش والمافظ 📱"
+            title="فودافون كاش والمحافظ 📱"
             desc="فودافون كاش - اتصالات كاش - أورنج - وي باي"
             icon="📱"
           />
@@ -173,7 +173,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
               <p className="mt-1 text-xs text-muted">اسم المحفظة: <span className="font-bold text-fg">{site.payment.walletName}</span></p>
             </div>
             <p className="mt-3 text-xs text-brand-300 font-medium">
-              بعد التحويل، يرجى رفع لقطة شاشة الإيصال بالأسفل لتفعيل حسابك فوراً.
+              بعد التحويل، يرجى رفع لقطة شاشة الإيصال بالأسفل لتفعيل حسابك فوراً على الواتساب.
             </p>
 
             <label className="mt-4 block text-sm font-bold text-fg" htmlFor="proof">
@@ -209,7 +209,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
               </div>
             </div>
             <p className="mt-3 text-xs text-brand-300 font-medium">
-              بعد التحويل عبر إنستاباي، ارفع لقطة الشاشة بالأسفل لتلقي التفعيل فوراً.
+              بعد التحويل عبر إنستاباي، ارفع لقطة الشاشة بالأسفل لتلقي التفعيل فوراً على الواتساب.
             </p>
 
             <label className="mt-4 block text-sm font-bold text-fg" htmlFor="proof">
