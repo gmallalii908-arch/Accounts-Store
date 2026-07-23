@@ -57,7 +57,7 @@ function slugify(input: string): string {
   return input
     .trim()
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, "-") // أي رمز غير حرف/رقم → شرطة
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 }
@@ -96,7 +96,6 @@ async function parseProductForm(
   const featured = formData.get("featured") === "on";
   const active = formData.has("active") ? formData.get("active") === "on" : true;
 
-  // الصور: رابط لكل سطر + صورة مرفوعة (اختياري)
   const urls = cleanStr(formData.get("imageUrls"), 4000)
     .split(/\r?\n/)
     .map((s) => s.trim())
@@ -162,8 +161,13 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const id = cleanStr(formData.get("id"), 40);
   if (id) {
-    await deleteProduct(id);
-    revalidatePath("/admin/products");
-    revalidatePath("/");
+    try {
+      await deleteProduct(id);
+      revalidatePath("/admin/products");
+      revalidatePath("/admin");
+      revalidatePath("/");
+    } catch (e) {
+      console.error("فشل حذف المنتج:", e);
+    }
   }
 }

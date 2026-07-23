@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Product } from "@/app/generated/prisma/client";
 
-// شكل المنتج بعد التجهيز للعرض (الصور اتحوّلت من JSON لمصفوفة)
+// شكل المنتج بعد التجهيز للعرض
 export type ProductView = {
   id: string;
   slug: string;
@@ -130,7 +130,7 @@ export function toProductView(p: Product): ProductView {
   };
 }
 
-/** كل المنتجات المتاحة للبيع (الأحدث أولاً) */
+/** كل المنتجات المتاحة للبيع */
 export async function getActiveProducts(): Promise<ProductView[]> {
   await ensureSeedProducts();
   const rows = await prisma.product.findMany({
@@ -140,7 +140,7 @@ export async function getActiveProducts(): Promise<ProductView[]> {
   return rows.map(toProductView);
 }
 
-/** المنتجات المميزة لصفحة الهبوط */
+/** المنتجات المميزة */
 export async function getFeaturedProducts(limit = 6): Promise<ProductView[]> {
   await ensureSeedProducts();
   const rows = await prisma.product.findMany({
@@ -151,7 +151,7 @@ export async function getFeaturedProducts(limit = 6): Promise<ProductView[]> {
   return rows.map(toProductView);
 }
 
-/** منتج واحد معروض للبيع بالـ slug (لصفحة المنتج) */
+/** منتج واحد بالـ slug */
 export async function getProductBySlug(
   rawSlug: string
 ): Promise<ProductView | null> {
@@ -174,9 +174,8 @@ export async function getProductBySlug(
   return row ? toProductView(row) : null;
 }
 
-// ===== أدمن (كل المنتجات بما فيها غير المعروضة) =====
+// ===== أدمن =====
 export async function getAllProductsAdmin(): Promise<ProductView[]> {
-  await ensureSeedProducts();
   const rows = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -186,7 +185,6 @@ export async function getAllProductsAdmin(): Promise<ProductView[]> {
 export async function getProductByIdAdmin(
   id: string
 ): Promise<ProductView | null> {
-  await ensureSeedProducts();
   const row = await prisma.product.findUnique({ where: { id } });
   return row ? toProductView(row) : null;
 }
@@ -218,6 +216,15 @@ export async function updateProduct(id: string, input: ProductInput) {
 }
 
 export async function deleteProduct(id: string) {
+  // فك ارتباط عناصر الطلبات السابقة بالمنتج بدلاً من فشل الحذف
+  try {
+    await prisma.orderItem.updateMany({
+      where: { productId: id },
+      data: { productId: null },
+    });
+  } catch (e) {
+    console.error("فشل فك ارتباط الطلبات:", e);
+  }
   return prisma.product.delete({ where: { id } });
 }
 
