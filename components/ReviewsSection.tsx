@@ -14,7 +14,11 @@ const REAL_REVIEW_IMAGES: CardItem[] = [
   { imgUrl: "/reviews/review8.jpg", alt: "إثبات تحويل إنستاباي 300 جنيه وتأكيد تسليم شاهد VIP" },
 ];
 
-export default function ReviewsSection() {
+type Props = {
+  reviews?: unknown;
+};
+
+export default function ReviewsSection({ reviews: _reviews }: Props = {}) {
   const [activeModalImg, setActiveModalImg] = useState<string | null>(null);
 
   return (
