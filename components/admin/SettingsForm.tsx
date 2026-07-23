@@ -47,8 +47,8 @@ export default function SettingsForm({ settings, pixelStates, products }: Props)
           <input
             type="text"
             name="whatsapp_number"
-            defaultValue={settings.whatsapp_number || "201000000000"}
-            placeholder="مثال: 201000000000 أو 01000000000"
+            defaultValue={settings.whatsapp_number || "201508997357"}
+            placeholder="مثال: 201508997357 أو 01508997357"
             dir="ltr"
             className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm font-bold text-fg placeholder:text-muted/50 focus:border-emerald-500 focus:outline-none"
           />

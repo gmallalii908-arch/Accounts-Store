@@ -12,13 +12,13 @@ export const site = {
     { label: "الضمان والسياسة", href: "/policy" },
     { label: "الدعم الفني", href: "/#contact" },
   ],
-  whatsapp: "201000000000",
+  whatsapp: "201508997357",
   // بيانات الدفع بالتحويل في مصر (فودافون كاش / إنستاباي Instapay)
   payment: {
-    walletNumber: "0100 000 0000",
+    walletNumber: "01508997357",
     walletName: "Accounts Store",
-    bankAccount: "EG00 0000 0000 0000 0000",
-    instapay: "accountsstore@instapay",
+    bankAccount: "01508997357",
+    instapay: "01508997357",
     note: "بعد التحويل الفوري ارفع لقطة الشاشة/الإيصال وسيصلك تفعيل الحساب فوراً عبر الواتساب حصراً.",
   },
   // تسليم رقمي مجاني وفوري في مصر
