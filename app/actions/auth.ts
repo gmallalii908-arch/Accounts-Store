@@ -13,8 +13,13 @@ import { isValidEmail, isValidPhone, cleanStr } from "@/lib/validation";
 export type AuthState = { error?: string };
 
 function safeRedirect(target: string): string {
-  // نسمح فقط بمسارات داخلية (نتفادى open redirect)
   return target.startsWith("/") && !target.startsWith("//") ? target : "/account";
+}
+
+function isRedirectError(err: unknown): boolean {
+  return Boolean(
+    err && typeof err === "object" && "digest" in err && typeof (err as { digest: unknown }).digest === "string" && (err as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
 }
 
 export async function registerAction(
@@ -35,21 +40,27 @@ export async function registerAction(
   if (password.length < 6)
     return { error: "كلمة السر لازم تكون 6 حروف على الأقل." };
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "فيه حساب بالإيميل ده بالفعل. سجّل دخول." };
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) return { error: "فيه حساب بالإيميل ده بالفعل. سجّل دخول." };
 
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      phone: phone || null,
-      passwordHash: await hashPassword(password),
-      role: "customer",
-    },
-  });
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        phone: phone || null,
+        passwordHash: await hashPassword(password),
+        role: "customer",
+      },
+    });
 
-  await createSession(user.id);
-  redirect(redirectTo);
+    await createSession(user.id);
+    redirect(redirectTo);
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    console.error("خطأ في إنشاء الحساب:", err);
+    return { error: "حدث خطأ أثناء إنشاء الحساب، يرجى إعادة المحاولة." };
+  }
 }
 
 export async function loginAction(
@@ -65,14 +76,19 @@ export async function loginAction(
   if (!isValidEmail(email) || !password)
     return { error: "ادخل إيميل وكلمة سر صحيحين." };
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  // نفس رسالة الخطأ في الحالتين (ما نكشفش إذا الإيميل موجود)
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return { error: "الإيميل أو كلمة السر غير صحيحة." };
-  }
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+      return { error: "الإيميل أو كلمة السر غير صحيحة." };
+    }
 
-  await createSession(user.id);
-  redirect(redirectTo);
+    await createSession(user.id);
+    redirect(redirectTo);
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    console.error("خطأ في تسجيل الدخول:", err);
+    return { error: "حدث خطأ أثناء تسجيل الدخول، يرجى إعادة المحاولة." };
+  }
 }
 
 export async function logoutAction(): Promise<void> {
