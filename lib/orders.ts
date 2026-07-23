@@ -16,7 +16,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   confirmed: "مؤكّد",
   delivered: "تم التسليم",
   cancelled: "ملغي",
-  returned: "مرتجع", // العميل رجّع الطلب وفق سياسة الاسترجاع (/policy)
+  returned: "مرتجع",
 };
 
 // خطوات التقدّم المعروضة في خط الزمن
@@ -27,11 +27,10 @@ export function statusLabel(status: string): string {
 }
 
 // ===== توليد رقم طلب مقروء وفريد =====
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // بدون أحرف ملتبسة
+const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function randomCode(len = 6): string {
   let out = "";
-  // نستخدم Math.random هنا (مش أمان تشفيري، بس كافي لرقم طلب) — يعمل على الخادم
   for (let i = 0; i < len; i++) {
     out += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
   }
@@ -47,7 +46,6 @@ async function generateOrderNumber(): Promise<string> {
     });
     if (!exists) return candidate;
   }
-  // احتياطي شبه مستحيل يتكرر
   return `SYX-${randomCode(9)}`;
 }
 
@@ -66,10 +64,10 @@ export type NewOrderInput = {
   customerPhone: string;
   customerEmail: string | null;
   address: string | null;
-  paymentMethod: "cash" | "transfer";
+  paymentMethod: string;
   proofImage: string | null;
   note: string | null;
-  shippingCents: number; // تكلفة الشحن المحسوبة (صفر للرقمي بالكامل)
+  shippingCents: number;
   items: NewOrderItem[];
 };
 
@@ -169,11 +167,10 @@ export async function getStats() {
   ]);
 
   const byStatus: Record<string, number> = {};
-  let revenueCents = 0; // إيراد الطلبات المؤكّدة/المسلّمة (المرتجع والملغي مش محسوبين)
+  let revenueCents = 0;
   for (const o of orders) {
     byStatus[o.status] = (byStatus[o.status] ?? 0) + 1;
     if (o.status === "confirmed" || o.status === "delivered") {
-      // totalCents (شامل الشحن) — fallback للطلبات القديمة اللي اتعملت قبل عمود الإجمالي
       revenueCents += o.totalCents || o.subtotalCents;
     }
   }
