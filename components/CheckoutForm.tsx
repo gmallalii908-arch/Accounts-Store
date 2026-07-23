@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 import { placeOrderAction, type CheckoutState } from "@/app/actions/checkout";
-import { site, shippingCostCents } from "@/lib/site";
+import { site } from "@/lib/site";
 import type { BumpOffer } from "@/lib/settings";
 
 type Props = {
@@ -24,7 +24,9 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
     placeOrderAction,
     initial
   );
-  const [method, setMethod] = useState<"cash" | "transfer">("transfer");
+
+  // الخياران الحصريان للدفع: محافظ كاش أو إنستاباي
+  const [method, setMethod] = useState<"transfer_wallet" | "transfer_instapay">("transfer_wallet");
   const [wantAccount, setWantAccount] = useState(false);
   const done = useRef(false);
 
@@ -33,7 +35,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
     items.map((i) => ({ productId: i.productId, qty: i.qty }))
   );
 
-  // عند نجاح الطلب: نفرّغ السلة ونروح لصفحة الطلب
+  // عند نجاح الطلب: نفرّغ السلة وننتقل لصفحة تتبع الطلب
   useEffect(() => {
     if (state.ok && state.orderNumber && !done.current) {
       done.current = true;
@@ -47,20 +49,20 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="items" value={itemsJson} />
 
-      {/* تنبيه التسليم الرقمي الفوري */}
+      {/* تنبيه التسليم الرقمي الفوري عبر الواتساب */}
       <div className="flex items-center gap-3 rounded-2xl border border-brand-500/40 bg-brand-500/10 p-4 text-brand-300">
         <span className="text-2xl shrink-0">⚡</span>
         <div className="text-sm">
-          <p className="font-bold text-fg">تسليم فوري ومستمر</p>
+          <p className="font-bold text-fg">تسليم وتفعيل فوري على الواتساب 🟢</p>
           <p className="text-xs text-muted mt-0.5">
-            ستصلك بيانات الحساب ورابط الاشتراك على الواتساب والإيميل المسجلين بالأسفل فور تأكيد الدفع.
+            سيصلك تفعيل الاشتراك خلال 10 دقائق فقط عبر الواتساب والإيميل فور تأكيد التحويل.
           </p>
         </div>
       </div>
 
       {/* بيانات العميل */}
       <section className="rounded-2xl border border-line bg-surface p-5">
-        <h2 className="mb-4 font-bold text-fg">بيانات لاستلام الاشتراك</h2>
+        <h2 className="mb-4 font-bold text-fg">بيانات استلام الاشتراك</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
             label="الاسم بالكامل"
@@ -70,7 +72,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
             placeholder="اسمك بالكامل"
           />
           <Field
-            label="رقم الموبايل (واتساب)"
+            label="رقم الموبايل (واتساب الاستلام)"
             name="customerPhone"
             defaultValue={user?.phone ?? ""}
             required
@@ -78,7 +80,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
             inputMode="tel"
           />
           <Field
-            label="البريد الإلكتروني (لاستلام الاشتراك)"
+            label="البريد الإلكتروني (لاستلام الحساب)"
             name="customerEmail"
             defaultValue={user?.email ?? ""}
             type="email"
@@ -136,55 +138,90 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
         )}
       </section>
 
-      {/* طريقة الدفع */}
+      {/* طرق الدفع والتفعيل المقصرة حصرياً على المحافظ وإنستاباي */}
       <section className="rounded-2xl border border-line bg-surface p-5">
-        <h2 className="mb-4 font-bold text-fg">طريقة الدفع والتفعيل</h2>
+        <h2 className="mb-4 font-bold text-fg">طريقة الدفع والتحويل الفوري</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <PayOption
-            value="transfer"
+            value="transfer_wallet"
             current={method}
             onSelect={setMethod}
-            title="تحويل محفظة / إنستاباي"
-            desc="فودافون كاش - Instapay - حساب بنكي"
+            title="فودافون كاش والمافظ 📱"
+            desc="فودافون كاش - اتصالات كاش - أورنج - وي باي"
             icon="📱"
           />
           <PayOption
-            value="cash"
+            value="transfer_instapay"
             current={method}
             onSelect={setMethod}
-            title="الدفع المؤجل (عند التسليم الرقمي)"
-            desc="تأكيد الطلب والدفع عند استلام بيانات الاشتراك"
-            icon="💳"
+            title="إنستاباي Instapay ⚡"
+            desc="تحويل فوري عبر تطبيق إنستاباي أو الحساب البنكي"
+            icon="⚡"
           />
         </div>
         <input type="hidden" name="paymentMethod" value={method} />
 
-        {method === "transfer" && (
+        {/* تفاصيل التحويل لفودافون كاش والمحافظ */}
+        {method === "transfer_wallet" && (
           <div className="mt-4 rounded-xl border border-line bg-bg p-4">
-            <p className="text-sm font-semibold text-fg">بيانات التحويل الفوري:</p>
-            <ul className="tnum mt-2 space-y-1.5 text-sm text-muted">
-              <li>
-                📱 فودافون كاش / محفظة: <span className="font-bold text-fg">{site.payment.walletNumber}</span>{" "}
-                ({site.payment.walletName})
-              </li>
-              <li>
-                ⚡ إنستاباي (Instapay): <span className="font-bold text-fg">{site.payment.instapay}</span>
-              </li>
-              <li>
-                🏦 حساب بنكي: <span className="font-bold text-fg">{site.payment.bankAccount}</span>
-              </li>
-            </ul>
-            <p className="mt-2.5 text-xs text-brand-300 font-medium">{site.payment.note}</p>
+            <p className="text-sm font-semibold text-fg">بيانات محفظة فودافون كاش / المحافظ الإلكترونية:</p>
+            <div className="tnum mt-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm">
+              <p className="text-muted">رقم التحويل المباشر:</p>
+              <p className="mt-0.5 text-lg font-black text-emerald-400 dir-ltr text-right select-all">
+                {site.payment.walletNumber}
+              </p>
+              <p className="mt-1 text-xs text-muted">اسم المحفظة: <span className="font-bold text-fg">{site.payment.walletName}</span></p>
+            </div>
+            <p className="mt-3 text-xs text-brand-300 font-medium">
+              بعد التحويل، يرجى رفع لقطة شاشة الإيصال بالأسفل لتفعيل حسابك فوراً.
+            </p>
 
-            <label className="mt-4 block text-sm font-medium text-fg" htmlFor="proof">
+            <label className="mt-4 block text-sm font-bold text-fg" htmlFor="proof">
               رفع إيصال / لقطة شاشة التحويل *
             </label>
             <input
               id="proof"
               name="proof"
               type="file"
+              required
               accept="image/png,image/jpeg,image/webp"
-              className="mt-1 block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-700"
+              className="mt-1.5 block w-full text-sm text-muted file:mr-3 file:rounded-xl file:border-0 file:bg-red-600 file:px-4 file:py-2.5 file:font-bold file:text-white hover:file:bg-red-700"
+            />
+          </div>
+        )}
+
+        {/* تفاصيل التحويل لإنستاباي والحساب البنكي */}
+        {method === "transfer_instapay" && (
+          <div className="mt-4 rounded-xl border border-line bg-bg p-4">
+            <p className="text-sm font-semibold text-fg">بيانات تحويل تطبيق إنستاباي (Instapay):</p>
+            <div className="tnum mt-2.5 space-y-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm">
+              <div>
+                <p className="text-xs text-muted">عنوان إنستاباي (IPA):</p>
+                <p className="font-black text-amber-300 text-base dir-ltr text-right select-all">
+                  {site.payment.instapay}
+                </p>
+              </div>
+              <div className="border-t border-white/10 pt-2">
+                <p className="text-xs text-muted">رقم الحساب البنكي / IBAN:</p>
+                <p className="font-bold text-fg text-sm dir-ltr text-right select-all">
+                  {site.payment.bankAccount}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-brand-300 font-medium">
+              بعد التحويل عبر إنستاباي، ارفع لقطة الشاشة بالأسفل لتلقي التفعيل فوراً.
+            </p>
+
+            <label className="mt-4 block text-sm font-bold text-fg" htmlFor="proof">
+              رفع إيصال / لقطة شاشة التحويل *
+            </label>
+            <input
+              id="proof"
+              name="proof"
+              type="file"
+              required
+              accept="image/png,image/jpeg,image/webp"
+              className="mt-1.5 block w-full text-sm text-muted file:mr-3 file:rounded-xl file:border-0 file:bg-red-600 file:px-4 file:py-2.5 file:font-bold file:text-white hover:file:bg-red-700"
             />
           </div>
         )}
@@ -238,7 +275,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
         </label>
       )}
 
-      {/* الإجمالي + الإرسال */}
+      {/* الإجمالي + زر التأكيد */}
       <div className="rounded-2xl border border-line bg-surface p-5">
         {(() => {
           const bumpCents = bump && bumpChecked ? bump.bumpCents : 0;
@@ -269,7 +306,7 @@ export default function CheckoutForm({ user, bump, bumpChecked, onBumpChange }: 
           {isPending ? "جاري إرسال الطلب…" : "تأكيد واستلام الاشتراك الآن 🔥"}
         </button>
         <p className="mt-2 text-center text-xs text-muted">
-          بتأكيد الطلب سيتم تجهيز حسابك وإرسال التفاصيل فوراً.
+          بتأكيد الطلب سيتم تجهيز حسابك وإرسال التفاصيل فوراً على الواتساب.
         </p>
       </div>
     </form>
@@ -320,9 +357,9 @@ function PayOption({
   desc,
   icon,
 }: {
-  value: "cash" | "transfer";
+  value: "transfer_wallet" | "transfer_instapay";
   current: string;
-  onSelect: (v: "cash" | "transfer") => void;
+  onSelect: (v: "transfer_wallet" | "transfer_instapay") => void;
   title: string;
   desc: string;
   icon: string;

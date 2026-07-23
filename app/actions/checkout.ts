@@ -1,7 +1,5 @@
 "use server";
 
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, hashPassword, createSession } from "@/lib/auth";
 import { createOrder, type NewOrderItem } from "@/lib/orders";
@@ -44,16 +42,10 @@ async function saveProof(file: File): Promise<string> {
   if (file.size > MAX_PROOF_BYTES) {
     throw new Error("حجم الصورة كبير (الحد الأقصى 5 ميجا).");
   }
-  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const rand = Array.from({ length: 20 }, () =>
-    "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]
-  ).join("");
-  const filename = `${Date.now()}-${rand}.${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads", "proofs");
-  await mkdir(dir, { recursive: true });
   const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, filename), bytes);
-  return `/uploads/proofs/${filename}`;
+  const base64 = bytes.toString("base64");
+  const mimeType = file.type || "image/jpeg";
+  return `data:${mimeType};base64,${base64}`;
 }
 
 export async function placeOrderAction(
@@ -66,7 +58,7 @@ export async function placeOrderAction(
   const email = cleanStr(formData.get("customerEmail"), 120).toLowerCase();
   const address = cleanStr(formData.get("address"), 300);
   const note = cleanStr(formData.get("note"), 500);
-  const paymentMethod = cleanStr(formData.get("paymentMethod"), 20);
+  const paymentMethod = cleanStr(formData.get("paymentMethod"), 30);
   const wantAccount = formData.get("createAccount") === "on";
   const password =
     typeof formData.get("password") === "string"
@@ -76,10 +68,9 @@ export async function placeOrderAction(
   if (name.length < 2) return { error: "اكتب اسمك بشكل صحيح." };
   if (!isValidPhone(phone)) return { error: "رقم الموبايل غير صحيح." };
   if (email && !isValidEmail(email)) return { error: "الإيميل غير صحيح." };
-  if (paymentMethod !== "cash" && paymentMethod !== "transfer")
-    return { error: "اختار طريقة دفع." };
+  if (!paymentMethod) return { error: "اختار طريقة دفع." };
 
-  // 2) السلة — نتحقّق من الأسعار من قاعدة البيانات (مش من العميل)
+  // 2) السلة — نتحقّق من الأسعار من قاعدة البيانات
   const lines = parseCart(cleanStr(formData.get("items"), 20000));
   if (lines.length === 0) return { error: "سلتك فاضية." };
 
@@ -91,11 +82,11 @@ export async function placeOrderAction(
   const items: NewOrderItem[] = [];
   for (const line of lines) {
     const p = byId.get(line.productId);
-    if (!p) continue; // منتج غير موجود/غير متاح — نتجاهله
+    if (!p) continue;
     items.push({
       productId: p.id,
       name: p.name,
-      priceCents: p.priceCents, // السعر من الـ DB
+      priceCents: p.priceCents,
       qty: line.qty,
       type: p.type,
     });
@@ -103,7 +94,7 @@ export async function placeOrderAction(
   if (items.length === 0)
     return { error: "المنتجات في سلتك مش متاحة حالياً." };
 
-  // ═══ العرض الإضافي (Order Bump) — السعر من إعدادات السيرفر، مش من العميل ═══
+  // ═══ العرض الإضافي (Order Bump) ═══
   if (formData.get("bump") === "1") {
     const bump = await getBumpOffer();
     const alreadyInCart = bump && items.some((i) => i.productId === bump.productId);
@@ -150,7 +141,7 @@ export async function placeOrderAction(
   // 4) إثبات الدفع (مطلوب للتحويل)
   let proofImage: string | null = null;
   const proof = formData.get("proof");
-  if (paymentMethod === "transfer") {
+  if (paymentMethod !== "cash") {
     if (!(proof instanceof File) || proof.size === 0) {
       return { error: "ارفع صورة إثبات التحويل." };
     }
@@ -161,7 +152,7 @@ export async function placeOrderAction(
     }
   }
 
-  // 5) إنشاء الطلب — الشحن بيتحسب على السيرفر من إعدادات site.ts (مش من العميل)
+  // 5) إنشاء الطلب
   const subtotalCents = items.reduce((s, i) => s + i.priceCents * i.qty, 0);
   const shippingCents = shippingCostCents(subtotalCents, hasPhysical);
 
