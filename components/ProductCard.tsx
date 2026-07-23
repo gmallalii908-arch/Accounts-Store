@@ -5,13 +5,25 @@ import type { ProductView } from "@/lib/products";
 import { formatPrice, discountLabel } from "@/lib/format";
 import AddToCartButton from "./AddToCartButton";
 
+function getProductPoster(product: ProductView): string {
+  if (product.images && product.images[0] && product.images[0].length > 2) {
+    return product.images[0];
+  }
+  const str = (product.slug + " " + product.name).toLowerCase();
+  if (str.includes("shahid") || str.includes("شاهد")) return "/products/shahid.svg";
+  if (str.includes("netflix") || str.includes("نتفليكس")) return "/products/netflix.svg";
+  if (str.includes("osn")) return "/products/osn.svg";
+  if (str.includes("disney") || str.includes("ديزني")) return "/products/disney.svg";
+  return "/products/placeholder.svg";
+}
+
 export default function ProductCard({ product }: { product: ProductView }) {
-  const img = product.images[0] ?? "/products/placeholder.svg";
+  const img = getProductPoster(product);
   const discount = discountLabel(product.priceCents, product.compareAtCents);
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-surface/90 backdrop-blur-md transition-all duration-300 hover:border-red-500/50 hover:shadow-[0_12px_35px_-10px_rgba(229,9,20,0.35)] hover:-translate-y-1.5">
-      {/* الصورة ذات التكبير الناعم والإصلاح الذكي للأخطاء */}
+      {/* صورة المنتج مع بوستر الخدمة الاحترافي */}
       <Link
         href={`/products/${product.slug}`}
         className="relative block aspect-[16/10] overflow-hidden bg-surface-2"
@@ -23,14 +35,15 @@ export default function ProductCard({ product }: { product: ProductView }) {
           loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            if (!target.src.includes("placeholder")) {
-              target.src = "/products/placeholder.svg";
+            const fallback = getProductPoster(product);
+            if (target.src !== fallback) {
+              target.src = fallback;
             }
           }}
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
 
-        {/* تدرّج تظليل على الصورة لتوضيح العنوان */}
+        {/* تدرّج تظليل على الصورة لتوضيح النواحي */}
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-black/40 opacity-60" />
 
         {/* الشارات المضيئة بالمنتج */}

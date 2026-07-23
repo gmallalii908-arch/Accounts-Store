@@ -9,17 +9,31 @@ function getDatabaseUrl(): string {
       const tmpDbPath = path.join("/tmp", "dev.db");
       const rootDbPath = path.join(process.cwd(), "dev.db");
 
-      // نسخ ملف قاعدة البيانات إلى المجلد المؤقت الشغال على الفيرسل /tmp
-      if (!fs.existsSync(tmpDbPath)) {
-        if (fs.existsSync(rootDbPath)) {
+      if (fs.existsSync(rootDbPath)) {
+        let shouldCopy = !fs.existsSync(tmpDbPath);
+
+        if (!shouldCopy) {
+          try {
+            const rootStat = fs.statSync(rootDbPath);
+            const tmpStat = fs.statSync(tmpDbPath);
+            if (rootStat.size !== tmpStat.size || rootStat.mtime > tmpStat.mtime) {
+              shouldCopy = true;
+            }
+          } catch {
+            shouldCopy = true;
+          }
+        }
+
+        if (shouldCopy) {
           fs.copyFileSync(rootDbPath, tmpDbPath);
         }
       }
+
       if (fs.existsSync(tmpDbPath)) {
         return `file:${tmpDbPath}`;
       }
     } catch (err) {
-      console.error("فشل إعداد قاعدة البيانات على الفيرسل:", err);
+      console.error("فشل نسخ قاعدة البيانات لـ /tmp على الفيرسل:", err);
     }
   }
 
@@ -38,7 +52,7 @@ function makeClient() {
   });
 }
 
-// Singleton لمنع تكرار الاتصالات في وضع التعديل الفوري
+// Singleton لمنع تكرار الاتصالات
 const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof makeClient> | undefined;
 };

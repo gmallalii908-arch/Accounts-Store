@@ -17,6 +17,94 @@ export type ProductView = {
   active: boolean;
 };
 
+const DEFAULT_PRODUCTS = [
+  {
+    slug: "netflix-premium-4k",
+    name: "اشتراك نتفليكس (Netflix Premium 4K)",
+    shortDesc: "ملف خاص برقم سرري 4K UHD · ضمان كامل بمصر",
+    description: "احصل على بروفايل شخصي خاص بك داخل حساب Netflix Premium رسمي 4K UHD. ملفك مقفول برمز PIN خاص بك، يعمل على الشاشات والموبايل واللاب توب بدون أي تعارض. تسليم فورياً بعد الدفع.",
+    priceCents: 12000,
+    compareAtCents: 20000,
+    type: "digital",
+    images: JSON.stringify(["/products/netflix.svg"]),
+    featured: true,
+    active: true,
+  },
+  {
+    slug: "shahid-vip",
+    name: "اشتراك شاهد VIP (الأفلام والمسلسلات)",
+    shortDesc: "عروض شاهد الأصلية بدون إعلانات بجودة HD",
+    description: "استمتع بجميع مسلسلات وأفلام شاهد VIP الحصرية والقبل السينما بدون فواصل إعلانية. حساب رسمي ومضمون 100% طوال فترة الاشتراك.",
+    priceCents: 9500,
+    compareAtCents: 15000,
+    type: "digital",
+    images: JSON.stringify(["/products/shahid.svg"]),
+    featured: true,
+    active: true,
+  },
+  {
+    slug: "shahid-vip-sports",
+    name: "اشتراك شاهد VIP + الباقة الرياضية (SSC)",
+    shortDesc: "مشاهدة الدوري السعودي والبطولات + مسلسلات وأفلام",
+    description: "الباقة الشاملة لمشاهدة جميع قنوات SSC الرياضية والدوري السعودي والبطولات الآسيوية بجانب مكتبة الأفلام والمسلسلات كاملة.",
+    priceCents: 14900,
+    compareAtCents: 24900,
+    type: "digital",
+    images: JSON.stringify(["/products/shahid.svg"]),
+    featured: true,
+    active: true,
+  },
+  {
+    slug: "osn-plus-premium",
+    name: "اشتراك OSN+ (مسلسلات HBO الحصرية)",
+    shortDesc: "عالم House of the Dragon و Game of Thrones ومسلسلات هوليوود",
+    description: "المنصة الحصرية لعروض HBO ومسلسلات Paramount. مشاهدة بأعلى جودة وصوت سينمائي متكامل مع ترجمة عربية احترافية.",
+    priceCents: 11000,
+    compareAtCents: 18000,
+    type: "digital",
+    images: JSON.stringify(["/products/osn.svg"]),
+    featured: true,
+    active: true,
+  },
+  {
+    slug: "disney-plus-ultra",
+    name: "اشتراك ديزني+ (Disney+ Premium)",
+    shortDesc: "عالم ديزني، Marvel، Star Wars و Pixar دبلجة وترجمة",
+    description: "شاهد كافة أفلام ومسلسلات مارفل، ديزني، وستار وارز بجودة 4K مع دبلجة عربية وترجمة احترافية. ضمان شامل طول مدة الباقة.",
+    priceCents: 9900,
+    compareAtCents: 16000,
+    type: "digital",
+    images: JSON.stringify(["/products/disney.svg"]),
+    featured: true,
+    active: true,
+  },
+  {
+    slug: "entertainment-bundle-vip",
+    name: "باقة الترفيه الشاملة (Netflix + Shahid + OSN+)",
+    shortDesc: "👑 3 منصات في اشتراك واحد بأقوى خصم في مصر!",
+    description: "عرض التوفير الأكبر لعشاق السينما والدراما بمصر! احصل على حساب نتفليكس 4K + شاهد VIP + OSN+ بسعر استثنائي وتوفير أكثر من 50% مع ضمان شامل.",
+    priceCents: 29900,
+    compareAtCents: 45000,
+    type: "digital",
+    images: JSON.stringify(["/products/netflix.svg"]),
+    featured: true,
+    active: true,
+  },
+];
+
+async function ensureSeedProducts() {
+  try {
+    const count = await prisma.product.count();
+    if (count === 0) {
+      for (const p of DEFAULT_PRODUCTS) {
+        await prisma.product.create({ data: p });
+      }
+    }
+  } catch (e) {
+    console.error("فشل التغذية التلقائية للمنتجات:", e);
+  }
+}
+
 /** يحوّل صف قاعدة البيانات لشكل جاهز للعرض */
 export function toProductView(p: Product): ProductView {
   let images: string[] = [];
@@ -44,6 +132,7 @@ export function toProductView(p: Product): ProductView {
 
 /** كل المنتجات المتاحة للبيع (الأحدث أولاً) */
 export async function getActiveProducts(): Promise<ProductView[]> {
+  await ensureSeedProducts();
   const rows = await prisma.product.findMany({
     where: { active: true },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
@@ -53,6 +142,7 @@ export async function getActiveProducts(): Promise<ProductView[]> {
 
 /** المنتجات المميزة لصفحة الهبوط */
 export async function getFeaturedProducts(limit = 6): Promise<ProductView[]> {
+  await ensureSeedProducts();
   const rows = await prisma.product.findMany({
     where: { active: true, featured: true },
     orderBy: { createdAt: "desc" },
@@ -65,6 +155,7 @@ export async function getFeaturedProducts(limit = 6): Promise<ProductView[]> {
 export async function getProductBySlug(
   rawSlug: string
 ): Promise<ProductView | null> {
+  await ensureSeedProducts();
   let decoded = rawSlug;
   try {
     decoded = decodeURIComponent(rawSlug).trim();
@@ -85,6 +176,7 @@ export async function getProductBySlug(
 
 // ===== أدمن (كل المنتجات بما فيها غير المعروضة) =====
 export async function getAllProductsAdmin(): Promise<ProductView[]> {
+  await ensureSeedProducts();
   const rows = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -94,6 +186,7 @@ export async function getAllProductsAdmin(): Promise<ProductView[]> {
 export async function getProductByIdAdmin(
   id: string
 ): Promise<ProductView | null> {
+  await ensureSeedProducts();
   const row = await prisma.product.findUnique({ where: { id } });
   return row ? toProductView(row) : null;
 }
@@ -128,7 +221,6 @@ export async function deleteProduct(id: string) {
   return prisma.product.delete({ where: { id } });
 }
 
-/** يتأكد إن الـ slug فريد (باستثناء منتج معيّن عند التعديل) */
 export async function isSlugTaken(
   slug: string,
   exceptId?: string

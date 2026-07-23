@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 
+function getPosterByAlt(alt: string): string {
+  const str = alt.toLowerCase();
+  if (str.includes("shahid") || str.includes("شاهد")) return "/products/shahid.svg";
+  if (str.includes("netflix") || str.includes("نتفليكس")) return "/products/netflix.svg";
+  if (str.includes("osn")) return "/products/osn.svg";
+  if (str.includes("disney") || str.includes("ديزني")) return "/products/disney.svg";
+  return "/products/placeholder.svg";
+}
+
 export default function ProductGallery({
   images,
   alt,
@@ -9,7 +18,8 @@ export default function ProductGallery({
   images: string[];
   alt: string;
 }) {
-  const list = images.length > 0 ? images : ["/products/placeholder.svg"];
+  const fallback = getPosterByAlt(alt);
+  const list = images.length > 0 ? images : [fallback];
   const [active, setActive] = useState(0);
 
   return (
@@ -18,8 +28,11 @@ export default function ProductGallery({
       <div className="relative aspect-square overflow-hidden rounded-2xl border border-line bg-surface-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={list[active]}
+          src={list[active] || fallback}
           alt={alt}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = fallback;
+          }}
           className="h-full w-full object-cover"
         />
       </div>
@@ -40,7 +53,14 @@ export default function ProductGallery({
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="h-full w-full object-cover" />
+              <img
+                src={src}
+                alt=""
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = fallback;
+                }}
+                className="h-full w-full object-cover"
+              />
             </button>
           ))}
         </div>
